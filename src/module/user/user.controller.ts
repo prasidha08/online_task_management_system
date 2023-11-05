@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { db } from "../../index";
 import { ObjectId } from "mongodb";
-import { TUserUpdate } from "./user.interface";
+import { TCreateUser, TUserUpdate } from "./user.interface";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
@@ -34,6 +34,34 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     });
   } catch (error) {
     console.log(error);
+    res.send({ status: false });
+  }
+};
+
+const signInUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password }: TCreateUser = req.body;
+
+  try {
+    const result = await db()
+      .collection("user")
+      .findOne({ email }, { projection: { password: 1, _id: 0 } });
+
+    if (result === null) {
+      throw new Error("User does not exists.");
+    }
+
+    const hashedPassword = bcrypt.compareSync(password, result.password);
+
+    if (!hashedPassword) {
+      throw new Error("Invalid password");
+    }
+
+    //TODO: get token using JWT
+    res.status(200).json({
+      success: true,
+      // data: result,
+    });
+  } catch (error) {
     res.send({ status: false });
   }
 };
@@ -127,4 +155,5 @@ export = {
   updateUser,
   addFriend,
   removeFriend,
+  signInUser,
 };

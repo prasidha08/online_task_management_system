@@ -8,6 +8,8 @@ export const REMOVE_FRIEND_URL = "/remove-friend/:userId" as const;
 
 export const UPDATE_USER_URL = "/update/:userId" as const;
 
+export const USER_SIGN_IN = "/sign-in" as const;
+
 // ================================ END  ==========================================
 
 //=============================== CATEGORY URL ====================================
