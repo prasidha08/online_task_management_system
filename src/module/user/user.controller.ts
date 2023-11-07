@@ -3,7 +3,10 @@ import bcrypt from "bcrypt";
 import { db } from "../../index";
 import { ObjectId } from "mongodb";
 import { TCreateUser, TUserUpdate } from "./user.interface";
+import ErrorHandler from "../../helpers/errorHandler";
+import { STATUS_CODE } from "../../helpers/statusCode";
 
+const { CONFLICT, CREATED, SUCCESS, UNAUTHORIZED } = STATUS_CODE;
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
@@ -12,7 +15,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const existedUser = await db().collection("user").findOne({ email });
 
     if (existedUser !== null) {
-      throw new Error("User already existed.");
+      throw new ErrorHandler("User already exists.", CONFLICT);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -28,13 +31,15 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
     delete userDoc.password;
 
-    res.status(200).json({
+    res.status(CREATED).json({
       success: true,
-      data: { ...userDoc, _id: result.insertedId },
+      data: {
+        ...userDoc,
+        _id: result.insertedId,
+      },
     });
   } catch (error) {
-    console.log(error);
-    res.send({ status: false });
+    return next(error);
   }
 };
 
@@ -53,16 +58,16 @@ const signInUser = async (req: Request, res: Response, next: NextFunction) => {
     const hashedPassword = bcrypt.compareSync(password, result.password);
 
     if (!hashedPassword) {
-      throw new Error("Invalid password");
+      throw new ErrorHandler("Invalid password", UNAUTHORIZED);
     }
 
     //TODO: get token using JWT
-    res.status(200).json({
+    res.status(SUCCESS).json({
       success: true,
       // data: result,
     });
   } catch (error) {
-    res.send({ status: false });
+    return next(error);
   }
 };
 
@@ -83,12 +88,12 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
         { $set: userDataToUpdate }
       );
 
-    res.status(200).json({
+    res.status(SUCCESS).json({
       success: true,
       data: result,
     });
   } catch (error) {
-    res.send({ status: false });
+    return next(error);
   }
 };
 
@@ -108,12 +113,12 @@ const addFriend = async (req: Request, res: Response, next: NextFunction) => {
         { $push: { friendLists: userDataToUpdate.friendLists } }
       );
 
-    res.status(200).json({
+    res.status(SUCCESS).json({
       success: true,
       data: result,
     });
   } catch (error) {
-    res.send({ status: false });
+    return next(error);
   }
 };
 
@@ -136,18 +141,13 @@ const removeFriend = async (
         }
       );
 
-    res.status(200).json({
+    res.status(SUCCESS).json({
       success: true,
       data: result,
     });
   } catch (error) {
-    res.send({ status: false });
+    return next(error);
   }
-};
-
-const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-  } catch (error) {}
 };
 
 export = {
