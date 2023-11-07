@@ -6,7 +6,7 @@ export const ADD_FRIEND_URL = "/add-friend/:userId" as const;
 
 export const REMOVE_FRIEND_URL = "/remove-friend/:userId" as const;
 
-export const UPDATE_USER_URL = "/update/:userId" as const;
+export const UPDATE_USER_URL = "/:userId" as const;
 
 export const USER_SIGN_IN = "/sign-in" as const;
 
@@ -23,6 +23,3 @@ export const CATEGORY_BASE_URL = "/api/category" as const;
 export const TASK_BASE_URL = "/api/task" as const;
 
 // ==============================   END    =========================================
-
-// ============================== USER URL ========================================
-// ============================== USER URL ========================================
