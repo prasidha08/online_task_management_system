@@ -20,6 +20,8 @@ export type TUserResponse = {
   friendLists: FriendLists[] | null;
 };
 
+export type TUserResponseWithoutId = Omit<TUserResponse, "_id">;
+
 export type TUserUpdate = {
   name?: string;
   phoneNumber?: string;
