@@ -5,8 +5,12 @@ import { ObjectId } from "mongodb";
 import { TCreateUser, TUserUpdate } from "./user.interface";
 import ErrorHandler from "../../helpers/errorHandler";
 import { STATUS_CODE } from "../../helpers/statusCode";
+import jwt from "jsonwebtoken";
+import { config } from "../../config";
 
-const { CONFLICT, CREATED, SUCCESS, UNAUTHORIZED } = STATUS_CODE;
+const { CONFLICT, CREATED, SUCCESS, UNAUTHORIZED, INTERNAL_SERVER, FORBIDDEN } =
+  STATUS_CODE;
+
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
@@ -47,12 +51,22 @@ const signInUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password }: TCreateUser = req.body;
 
   try {
+    if (
+      config.SECRET_TOKEN === undefined ||
+      config.ACCESS_SECRET_TOKEN === undefined
+    ) {
+      throw new ErrorHandler(
+        "Access token secret is not defined",
+        INTERNAL_SERVER
+      );
+    }
+
     const result = await db()
       .collection("user")
       .findOne({ email }, { projection: { password: 1, _id: 0 } });
 
     if (result === null) {
-      throw new Error("User does not exists.");
+      throw new ErrorHandler("User does not exists.");
     }
 
     const hashedPassword = bcrypt.compareSync(password, result.password);
@@ -61,10 +75,20 @@ const signInUser = async (req: Request, res: Response, next: NextFunction) => {
       throw new ErrorHandler("Invalid password", UNAUTHORIZED);
     }
 
-    //TODO: get token using JWT
+    const refreshToken = jwt.sign(
+      { email, password: hashedPassword },
+      config.SECRET_TOKEN
+    );
+
+    const accessToken = jwt.sign(
+      { email, password: hashedPassword },
+      config.ACCESS_SECRET_TOKEN,
+      { expiresIn: "2m" }
+    );
+
     res.status(SUCCESS).json({
       success: true,
-      // data: result,
+      data: { refreshToken, accessToken },
     });
   } catch (error) {
     return next(error);
@@ -150,10 +174,46 @@ const removeFriend = async (
   }
 };
 
+const refreshToken = (req: Request, res: Response, next: NextFunction) => {
+  const refreshToken = req.body.refreshToken;
+
+  if (
+    config.SECRET_TOKEN === undefined ||
+    config.ACCESS_SECRET_TOKEN === undefined
+  ) {
+    next(new ErrorHandler("Token is prod", INTERNAL_SERVER));
+    return;
+  }
+
+  if (!refreshToken) {
+    next(new ErrorHandler("Refresh token is required", UNAUTHORIZED));
+    return;
+  }
+
+  jwt.verify(
+    refreshToken,
+    config.SECRET_TOKEN,
+    (err: jwt.VerifyErrors | null, decoded?: string | jwt.JwtPayload) => {
+      if (err) {
+        next(new ErrorHandler("Failed to verify refresh token", FORBIDDEN));
+      }
+
+      // If the refresh token is valid, issue a new access token
+      console.log(decoded);
+      const accessToken = jwt.sign({}, config.ACCESS_SECRET_TOKEN!, {
+        expiresIn: "1m",
+      }); // New access token
+
+      res.status(200).json({ accessToken });
+    }
+  );
+};
+
 export = {
   createUser,
   updateUser,
   addFriend,
   removeFriend,
   signInUser,
+  refreshToken,
 };

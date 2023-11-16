@@ -10,6 +10,7 @@ export const UPDATE_USER_URL = "/:userId" as const;
 
 export const USER_SIGN_IN = "/sign-in" as const;
 
+export const REFRESH_TOKEN_URL = "refresh-token" as const;
 // ================================ END  ==========================================
 
 //=============================== CATEGORY URL ====================================
