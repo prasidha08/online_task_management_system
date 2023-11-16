@@ -2,7 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { db } from "../../index";
 import { ObjectId } from "mongodb";
-import { TCreateUser, TUserUpdate } from "./user.interface";
+import {
+  TCreateUser,
+  TUserResponseWithoutId,
+  TUserUpdate,
+} from "./user.interface";
 import ErrorHandler from "../../helpers/errorHandler";
 import { STATUS_CODE } from "../../helpers/statusCode";
 import jwt from "jsonwebtoken";
@@ -11,10 +15,12 @@ import { config } from "../../config";
 const { CONFLICT, CREATED, SUCCESS, UNAUTHORIZED, INTERNAL_SERVER, FORBIDDEN } =
   STATUS_CODE;
 
+const tokenExpiresOn = "20m";
+
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
-  const userDoc = req.body;
+  const userDoc: TUserResponseWithoutId = req.body;
   try {
     const existedUser = await db().collection("user").findOne({ email });
 
@@ -50,6 +56,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 const signInUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password }: TCreateUser = req.body;
 
+  console.log(config);
   try {
     if (
       config.SECRET_TOKEN === undefined ||
@@ -75,16 +82,11 @@ const signInUser = async (req: Request, res: Response, next: NextFunction) => {
       throw new ErrorHandler("Invalid password", UNAUTHORIZED);
     }
 
-    const refreshToken = jwt.sign(
-      { email, password: hashedPassword },
-      config.SECRET_TOKEN
-    );
+    const refreshToken = jwt.sign({ email }, config.SECRET_TOKEN);
 
-    const accessToken = jwt.sign(
-      { email, password: hashedPassword },
-      config.ACCESS_SECRET_TOKEN,
-      { expiresIn: "2m" }
-    );
+    const accessToken = jwt.sign({ email }, config.ACCESS_SECRET_TOKEN, {
+      expiresIn: tokenExpiresOn,
+    });
 
     res.status(SUCCESS).json({
       success: true,
@@ -175,8 +177,11 @@ const removeFriend = async (
 };
 
 const refreshToken = (req: Request, res: Response, next: NextFunction) => {
-  const refreshToken = req.body.refreshToken;
+  const authorization = req.headers.authorization;
 
+  const { email } = req.body;
+
+  const refreshToken = authorization?.split(" ")[1];
   if (
     config.SECRET_TOKEN === undefined ||
     config.ACCESS_SECRET_TOKEN === undefined
@@ -200,8 +205,8 @@ const refreshToken = (req: Request, res: Response, next: NextFunction) => {
 
       // If the refresh token is valid, issue a new access token
       console.log(decoded);
-      const accessToken = jwt.sign({}, config.ACCESS_SECRET_TOKEN!, {
-        expiresIn: "1m",
+      const accessToken = jwt.sign({ email }, config.ACCESS_SECRET_TOKEN!, {
+        expiresIn: tokenExpiresOn,
       }); // New access token
 
       res.status(200).json({ accessToken });
