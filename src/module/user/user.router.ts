@@ -11,6 +11,7 @@ import {
   registerOrSignInValidation,
   removeFriendValidation,
   updateValidation,
+  verifyToken,
 } from "./user.middleware";
 
 const router = express.Router();
@@ -23,10 +24,15 @@ router
 
 router.route(UPDATE_USER_URL).patch(updateValidation, controller.updateUser);
 
-router.route(ADD_FRIEND_URL).patch(addFriendValidation, controller.addFriend);
+router
+  .route(ADD_FRIEND_URL)
+  .patch(addFriendValidation, verifyToken, controller.addFriend);
 
 router
   .route(REMOVE_FRIEND_URL)
-  .patch(removeFriendValidation, controller.removeFriend);
+  .patch(removeFriendValidation, verifyToken, controller.removeFriend);
+
+// refresh token router
+router.route(REMOVE_FRIEND_URL).post(verifyToken, controller.refreshToken);
 
 export = router;

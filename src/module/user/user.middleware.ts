@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import userValidation from "./user.validation";
 import { STATUS_CODE } from "../../helpers/statusCode";
+import jwt from "jsonwebtoken";
+import ErrorHandler from "../../helpers/errorHandler";
+import { config } from "../../config";
 
 const {
   userRegisterValidation,
@@ -68,4 +71,27 @@ export const removeFriendValidation = (
     });
   }
   return next();
+};
+
+// verify token
+
+export const verifyToken = (req: Request, _: Response, next: NextFunction) => {
+  const token = req.headers.authorization; // Assuming the token is sent in the Authorization header
+
+  if (!config.SECRET_TOKEN) {
+    next(new ErrorHandler("Token is undefined", 401));
+    return;
+  }
+
+  if (!token) {
+    next(new ErrorHandler("No token provided", 401));
+    return;
+  }
+
+  jwt.verify(token, config.SECRET_TOKEN, (err, decoded) => {
+    console.log(decoded, "decoded");
+    if (err) {
+      next(new ErrorHandler("Invalid token", 401));
+    }
+  });
 };
