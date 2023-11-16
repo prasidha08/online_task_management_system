@@ -17,6 +17,8 @@ export const REFRESH_TOKEN_URL = "refresh-token" as const;
 
 export const CATEGORY_BASE_URL = "/api/category" as const;
 
+export const CATEGORY_PARAMS_URL = "/:categoryId" as const;
+
 // ==============================   END   =========================================
 
 // ============================== TASK URL ========================================

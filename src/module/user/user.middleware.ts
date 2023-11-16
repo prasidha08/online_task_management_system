@@ -76,9 +76,11 @@ export const removeFriendValidation = (
 // verify token
 
 export const verifyToken = (req: Request, _: Response, next: NextFunction) => {
-  const token = req.headers.authorization; // Assuming the token is sent in the Authorization header
+  const authorization = req.headers.authorization; // Assuming the token is sent in the Authorization header
 
-  if (!config.SECRET_TOKEN) {
+  const token = authorization?.split(" ")[1];
+
+  if (!config.ACCESS_SECRET_TOKEN) {
     next(new ErrorHandler("Token is undefined", 401));
     return;
   }
@@ -88,10 +90,14 @@ export const verifyToken = (req: Request, _: Response, next: NextFunction) => {
     return;
   }
 
-  jwt.verify(token, config.SECRET_TOKEN, (err, decoded) => {
-    console.log(decoded, "decoded");
+  jwt.verify(token, config.ACCESS_SECRET_TOKEN, (err, decoded) => {
+    console.log(
+      "🚀 ~ file: user.middleware.ts:94 ~ jwt.verify ~ decoded:",
+      decoded
+    );
     if (err) {
       next(new ErrorHandler("Invalid token", 401));
     }
+    next();
   });
 };
