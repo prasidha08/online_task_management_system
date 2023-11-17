@@ -25,4 +25,6 @@ export const CATEGORY_PARAMS_URL = "/:categoryId" as const;
 
 export const TASK_BASE_URL = "/api/task" as const;
 
+export const TASKS_PARAMS_URL = "/:categoryId" as const;
+
 // ==============================   END    =========================================

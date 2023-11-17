@@ -2,11 +2,16 @@ import express, { NextFunction, Request, Response } from "express";
 import mongooseDatabase from "mongoose";
 import { config } from "./config";
 import cors from "cors";
-import { CATEGORY_BASE_URL, USER_BASE_URL } from "./helpers/urls";
+import {
+  CATEGORY_BASE_URL,
+  TASK_BASE_URL,
+  USER_BASE_URL,
+} from "./helpers/urls";
 import userRouter from "./module/user/user.router";
 import { STATUS_CODE } from "./helpers/statusCode";
 import categoryRouter from "./module/category/category.router";
 import { verifyToken } from "./module/user/user.middleware";
+import taskRouter from "./module/task/task.router";
 
 const app = express();
 
@@ -39,6 +44,8 @@ app.use(USER_BASE_URL, userRouter);
 app.use(verifyToken);
 
 app.use(CATEGORY_BASE_URL, categoryRouter);
+
+app.use(TASK_BASE_URL, taskRouter);
 
 // handle the incorrect route
 app.use("*", (__: Request, _: Response, next: NextFunction) => {

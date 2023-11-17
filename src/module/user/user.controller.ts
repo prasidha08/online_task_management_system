@@ -15,7 +15,7 @@ import { config } from "../../config";
 const { CONFLICT, CREATED, SUCCESS, UNAUTHORIZED, INTERNAL_SERVER, FORBIDDEN } =
   STATUS_CODE;
 
-const tokenExpiresOn = "20m";
+const tokenExpiresOn = "2m";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
