@@ -100,13 +100,11 @@ const updateCategory = async (
       throw new ErrorHandler("Category not found");
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Successfully updated category",
-        success: true,
-        data: response,
-      });
+    res.status(200).json({
+      message: "Successfully updated category",
+      success: true,
+      data: response,
+    });
   } catch (error) {
     next(error);
   }

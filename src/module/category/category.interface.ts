@@ -9,4 +9,5 @@ export type TRequestCategory = {
   updatedAt: EpochTimeStamp | null;
   createdAt: EpochTimeStamp | null;
   taskIds: string[] | null;
+  description: string | null;
 };
