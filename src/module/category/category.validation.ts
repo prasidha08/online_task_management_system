@@ -7,6 +7,7 @@ const UserListsSchema = Joi.object({
 
 const addCategorySchema = Joi.object({
   title: string().required(),
+  description: string(),
   userLists: alternatives().try(Joi.object().allow(null), UserListsSchema),
 });
 

@@ -5,6 +5,7 @@ export type ObjectValues<T> = T[keyof T];
 export const STATUS = {
   COMPLETED: "COMPLETED",
   IN_PROGRESS: "IN_PROGRESS",
+  TODO: "TODO",
 } as const;
 
 export const LABEL = {
