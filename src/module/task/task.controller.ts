@@ -22,7 +22,22 @@ export const addTasks = async (
       .collection(COLLECTION_NAMES.CATEGORIES)
       .updateOne(
         { _id: new ObjectId(task.categoryId) },
-        { $push: { taskIds: response.insertedId } }
+        // TODO: this is not working..
+        {
+          $cond: {
+            if: { $eq: [{ $type: "$taskIds" }, "null"] }, // Check if taskIds is null
+            then: {
+              $set: {
+                taskIds: [response.insertedId], // If null, set taskIds as an array containing response.insertedId
+              },
+            },
+            else: {
+              $push: {
+                taskIds: response.insertedId, // If taskIds is an array, push response.insertedId to it
+              },
+            },
+          },
+        }
       );
 
     res.status(200).json({
@@ -45,8 +60,7 @@ export const getTasks = async (
   const taskCollection = db().collection(COLLECTION_NAMES.TASKS);
 
   try {
-    const tasks = taskCollection.find({ categoryId });
-    console.log("🚀 ~ file: task.controller.ts:50 ~ tasks:", tasks);
+    const tasks = await taskCollection.find({ categoryId }).toArray();
 
     res.status(200).json({
       success: true,
