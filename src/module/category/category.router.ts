@@ -8,9 +8,14 @@ import {
 
 const categoryRouter = express.Router();
 
-categoryRouter.route("/").post(controllers.createCategory);
+categoryRouter
+  .route("/:userId")
+  .post(validateAddCategory, controllers.createCategory);
+categoryRouter.route("/:userId").get(controllers.getAllCategory);
 
-categoryRouter.route(CATEGORY_PARAMS_URL).delete(controllers.deleteCategory);
+categoryRouter
+  .route(CATEGORY_PARAMS_URL)
+  .delete(validateDeleteCategory, controllers.deleteCategory);
 
 categoryRouter.route(CATEGORY_PARAMS_URL).patch(controllers.updateCategory);
 
