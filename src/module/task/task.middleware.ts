@@ -25,7 +25,7 @@ export const validateGetTasks = (
   _: Response,
   next: NextFunction
 ) => {
-  const { error } = getTasksValidation.params.validate(req.body);
+  const { error } = getTasksValidation.params.validate(req.params);
 
   if (error) {
     next(new ErrorHandler(error.message, BAD_REQUEST));
@@ -34,4 +34,4 @@ export const validateGetTasks = (
   next();
 };
 
-export const validateUpdateTask = () => {};
+// export const validateUpdateTask = () => {};
