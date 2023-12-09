@@ -11,16 +11,17 @@ export const validateAddCategory = (
   _: Response,
   next: NextFunction
 ) => {
-  // const response = addCategoryValidation.body.validate(req.body);
-  // console.log("🚀 ~ file: category.middleware.ts:15 ~ response:", response);
-  // if (response.error) {
-  //   return next({
-  //     status: BAD_REQUEST,
-  //     message: response.error?.message,
-  //   });
-  // }
-  // return next();
-  return next();
+  const response = addCategoryValidation.body.validate(req.body);
+  const response2 = addCategoryValidation.params.validate(req.params);
+
+  if (response.error || response2.error) {
+    return next({
+      status: BAD_REQUEST,
+      message: response.error?.message ?? response2.error?.message,
+    });
+  }
+
+  next();
 };
 
 export const validateDeleteCategory = (

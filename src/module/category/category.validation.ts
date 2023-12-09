@@ -1,23 +1,28 @@
-import Joi, { alternatives, string } from "joi";
+import Joi from "joi";
 
 const UserListsSchema = Joi.object({
-  _id: string().hex().length(24).required(),
-  name: string().required(),
+  _id: Joi.string().hex().length(24).required(),
+  name: Joi.string().required(),
 });
 
 const addCategorySchema = Joi.object({
-  title: string().required(),
-  description: string(),
-  userLists: alternatives().try(Joi.object().allow(null), UserListsSchema),
+  title: Joi.string().required(),
+  description: Joi.string(),
+  userLists: Joi.alternatives().try(Joi.object().allow(null), UserListsSchema),
 });
 
 const categoryIdSchema = Joi.object({
-  categoryId: string().hex().length(24).required(),
+  categoryId: Joi.string().hex().length(24).required(),
+});
+
+const userIdSchema = Joi.object({
+  userId: Joi.string().hex().length(24).required(),
 });
 
 export = {
   addCategoryValidation: {
     body: addCategorySchema,
+    params: userIdSchema,
   },
 
   deleteCategoryValidation: {
