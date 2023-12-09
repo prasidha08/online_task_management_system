@@ -5,7 +5,7 @@ import { validateAddTask, validateGetTasks } from "./task.middleware";
 
 const taskRouter = express.Router();
 
-taskRouter.route(TASK_BASE_URL).post(validateAddTask, addTasks);
+taskRouter.route("/").post(validateAddTask, addTasks);
 
 taskRouter.route(TASKS_PARAMS_URL).get(validateGetTasks, getTasks);
 
