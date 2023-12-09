@@ -1,28 +1,30 @@
-import Joi, { alternatives, number, string } from "joi";
+import Joi from "joi";
 import { LABEL, STATUS } from "./task.interface";
 
 const UserListsSchema = Joi.object({
-  _id: string().required(),
-  name: string().required(),
+  _id: Joi.string().required(),
+  name: Joi.string().required(),
 });
 
 const validateAddTaskSchema = Joi.object({
-  label: string().valid(...Object.values(LABEL)),
-  title: string().required(),
-  status: string().valid(...Object.values(STATUS)),
-  createdAt: number().required(),
-  createdBy: string().required(),
-  categoryId: string(),
-  description: string().allow(null),
-  userLists: alternatives().try(Joi.object().allow(null), UserListsSchema), // these are the person who can see the tasks
-  estimatedHr: number().allow(null),
-  updatedAt: number().allow(null),
-  updatedBy: string().allow(null),
-  taskCompletedHr: number().allow(null),
+  label: Joi.string().valid(...Object.values(LABEL)),
+  title: Joi.string().required(),
+  status: Joi.string()
+    .valid(...Object.values(STATUS))
+    .required(),
+  createdAt: Joi.number(),
+  createdBy: Joi.string().required(),
+  categoryId: Joi.string().required(),
+  description: Joi.string().allow(null),
+  userLists: Joi.alternatives().try(Joi.object().allow(null), UserListsSchema), // these are the person who can see the tasks
+  estimatedHr: Joi.number().allow(null),
+  updatedAt: Joi.number().allow(null).default(null),
+  updatedBy: Joi.string().allow(null).default(null),
+  taskCompletedHr: Joi.number().allow(null).default(null),
 });
 
 const validateCategoryIdParams = Joi.object({
-  categoryId: string().required(),
+  categoryId: Joi.string().required(),
 });
 
 export = {
