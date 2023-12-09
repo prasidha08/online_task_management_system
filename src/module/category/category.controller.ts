@@ -13,12 +13,14 @@ const createCategory = async (
   res: Response,
   next: NextFunction
 ) => {
+  const { userId } = req.params;
   const categories: TRequestCategory = {
     ...req.body,
     updatedAt: null,
     createdAt: Date.now(),
     userIds: req.body.userIds ?? null,
     taskIds: null,
+    userId,
   };
 
   const categoriesCollection = db().collection(COLLECTION_NAMES.CATEGORIES);
@@ -26,6 +28,7 @@ const createCategory = async (
   try {
     const existedCategory = await categoriesCollection.findOne({
       title: categories.title,
+      userId,
     });
 
     if (!existedCategory) {
@@ -38,6 +41,28 @@ const createCategory = async (
       return;
     }
     next(new ErrorHandler(`${categories.title} already exists.`, CONFLICT));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAllCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.params;
+
+  const categoriesCollection = db().collection(COLLECTION_NAMES.CATEGORIES);
+
+  try {
+    const categories = await categoriesCollection.find({ userId }).toArray();
+
+    res.status(SUCCESS).json({
+      success: true,
+      data: categories,
+      message: "Successfully created.",
+    });
   } catch (error) {
     next(error);
   }
@@ -112,6 +137,7 @@ const updateCategory = async (
 
 export const controllers = {
   createCategory,
+  getAllCategory,
   updateCategory,
   deleteCategory,
 };
