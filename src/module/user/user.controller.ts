@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { db } from "../../index";
+
 import { ObjectId } from "mongodb";
 import {
   TCreateUser,
@@ -11,6 +11,7 @@ import ErrorHandler from "../../helpers/errorHandler";
 import { STATUS_CODE } from "../../helpers/statusCode";
 import jwt from "jsonwebtoken";
 import { config } from "../../config";
+import { dbCollection } from "../..";
 
 const { CONFLICT, CREATED, SUCCESS, UNAUTHORIZED, INTERNAL_SERVER, FORBIDDEN } =
   STATUS_CODE;
@@ -22,7 +23,9 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
   const userDoc: TUserResponseWithoutId = req.body;
   try {
-    const existedUser = await db().collection("user").findOne({ email });
+    const existedUser = await dbCollection
+      .collection("user")
+      .findOne({ email });
 
     if (existedUser !== null) {
       throw new ErrorHandler("User already exists.", CONFLICT);
@@ -37,7 +40,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     userDoc.updatedAt = null;
     userDoc.phoneNumber = null;
 
-    const result = await db().collection("user").insertOne(userDoc);
+    const result = await dbCollection.collection("user").insertOne(userDoc);
 
     delete userDoc.password;
 
@@ -68,7 +71,7 @@ const signInUser = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    const result = await db()
+    const result = await dbCollection
       .collection("user")
       .findOne({ email }, { projection: { password: 1, _id: 0 } });
 
@@ -107,7 +110,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
       userDataToUpdate.password = hashedPassword;
     }
 
-    const result = await db()
+    const result = await dbCollection
       .collection("user")
       .findOneAndUpdate(
         { _id: new ObjectId(userId) },
@@ -132,7 +135,7 @@ const addFriend = async (req: Request, res: Response, next: NextFunction) => {
 
   userDataToUpdate.updatedAt = Date.now();
   try {
-    const result = await db()
+    const result = await dbCollection
       .collection("user")
       .updateOne(
         { _id: new ObjectId(userId) },
@@ -157,15 +160,13 @@ const removeFriend = async (
   const { friendId } = req.body;
 
   try {
-    const result = await db()
-      .collection("user")
-      .updateOne(
-        { _id: new ObjectId(userId) },
-        {
-          $pull: { friendLists: { _id: friendId } },
-          $set: { updatedAt: Date.now() },
-        }
-      );
+    const result = await dbCollection.collection("user").updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $pull: { friendLists: { _id: friendId } },
+        $set: { updatedAt: Date.now() },
+      }
+    );
 
     res.status(SUCCESS).json({
       success: true,

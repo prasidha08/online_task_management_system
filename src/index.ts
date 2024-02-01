@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import mongooseDatabase from "mongoose";
+import { MongoClient } from "mongodb";
 import { config } from "./config";
 import cors from "cors";
 import {
@@ -15,23 +15,25 @@ import taskRouter from "./module/task/task.router";
 
 const app = express();
 
+const client = new MongoClient(config.MONGODB_URI ?? "");
+
+export const dbCollection = client.db("online-task-management");
+
 // Database connection
-export let dbConnection: mongooseDatabase.Connection;
 
-mongooseDatabase
-  .connect(config.MONGODB_URI ?? "")
-  .then((client) => {
-    dbConnection = client.connection;
+const connectDatabase = async () => {
+  try {
+    await client.connect();
+    console.log("Server is started at port", config.PORT);
+  } catch (error) {
+    console.log(
+      error,
+      "Something went wrong while connecting to the database."
+    );
+  }
+};
 
-    app.listen(config.PORT, () => {
-      console.log("Server is started at port", config.PORT);
-    });
-  })
-  .catch((err) => {
-    console.log(err, "Something went wrong while connecting to the database.");
-  });
-
-export const db = () => dbConnection;
+connectDatabase();
 
 app.use(cors());
 

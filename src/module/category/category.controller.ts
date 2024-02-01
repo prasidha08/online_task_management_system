@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import ErrorHandler from "../../helpers/errorHandler";
-import { db } from "../..";
 import { COLLECTION_NAMES } from "../../helpers/collectionName";
 import { TRequestCategory } from "./category.interface";
 import { STATUS_CODE } from "../../helpers/statusCode";
 import { ObjectId } from "mongodb";
+import { dbCollection } from "../..";
 
 const { SUCCESS, CONFLICT, BAD_REQUEST } = STATUS_CODE;
 
@@ -23,7 +23,9 @@ const createCategory = async (
     userId,
   };
 
-  const categoriesCollection = db().collection(COLLECTION_NAMES.CATEGORIES);
+  const categoriesCollection = dbCollection.collection(
+    COLLECTION_NAMES.CATEGORIES
+  );
 
   try {
     const existedCategory = await categoriesCollection.findOne({
@@ -53,7 +55,9 @@ const getAllCategory = async (
 ) => {
   const { userId } = req.params;
 
-  const categoriesCollection = db().collection(COLLECTION_NAMES.CATEGORIES);
+  const categoriesCollection = dbCollection.collection(
+    COLLECTION_NAMES.CATEGORIES
+  );
 
   try {
     const categories = await categoriesCollection.find({ userId }).toArray();
@@ -75,7 +79,9 @@ const deleteCategory = async (
 ) => {
   const { categoryId } = req.params;
 
-  const categoriesCollection = db().collection(COLLECTION_NAMES.CATEGORIES);
+  const categoriesCollection = dbCollection.collection(
+    COLLECTION_NAMES.CATEGORIES
+  );
 
   try {
     const response = await categoriesCollection.findOne({
@@ -112,7 +118,9 @@ const updateCategory = async (
     updatedAt: Date.now(),
   };
 
-  const categoriesCollection = db().collection(COLLECTION_NAMES.CATEGORIES);
+  const categoriesCollection = dbCollection.collection(
+    COLLECTION_NAMES.CATEGORIES
+  );
   try {
     const response = await categoriesCollection.findOneAndUpdate(
       {
